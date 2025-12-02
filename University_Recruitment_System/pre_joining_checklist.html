@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pre-Joining Checklist – UoS</title>
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #94a3b8;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      color: #e6eef6;
+    }
+    html, body { height: 100%; margin: 0; background: linear-gradient(180deg, var(--bg), #071026); }
+    .wrap { max-width: 1000px; margin: 28px auto; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    h1 { font-size: 24px; margin: 0; }
+    .sub { color: var(--muted); font-size: 14px; }
+    .card { background: linear-gradient(180deg, var(--card), rgba(255,255,255,0.02)); padding: 20px; border-radius: var(--radius); box-shadow: 0 6px 18px rgba(2,6,23,0.6); margin-bottom: 18px; }
+
+    .progress-bar { height: 12px; background: rgba(255,255,255,0.03); border-radius: 999px; overflow: hidden; margin: 16px 0; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #60a5fa); transition: width 0.3s; }
+    .progress-text { text-align: center; color: var(--muted); font-size: 14px; margin-top: 8px; }
+
+    .checklist-item { display: flex; align-items: flex-start; gap: 12px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.02); transition: all 0.3s; }
+    .checklist-item:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
+    .checklist-item.completed { background: rgba(16,185,129,0.1); border-color: var(--success); }
+    .checklist-item.overdue { border-left: 4px solid var(--danger); }
+    .checklist-item.due-soon { border-left: 4px solid var(--warning); }
+
+    .checkbox { width: 24px; height: 24px; border: 2px solid var(--muted); border-radius: 6px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.3s; }
+    .checkbox.checked { background: var(--success); border-color: var(--success); }
+    .checkbox.checked::after { content: '✓'; color: white; font-weight: bold; }
+
+    .item-content { flex: 1; }
+    .item-title { font-weight: 600; margin-bottom: 4px; }
+    .item-desc { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .item-meta { display: flex; gap: 12px; font-size: 13px; color: var(--muted); }
+    .item-status { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .status-pending { background: rgba(148,163,184,0.2); color: var(--muted); }
+    .status-completed { background: rgba(16,185,129,0.2); color: var(--success); }
+    .status-overdue { background: rgba(239,68,68,0.2); color: var(--danger); }
+    .status-due-soon { background: rgba(245,158,11,0.2); color: var(--warning); }
+
+    .upload-section { margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; }
+    .file-upload { padding: 12px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .file-upload:hover { border-color: var(--accent); background: rgba(6,182,212,0.05); }
+    .file-upload input[type="file"] { position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+    .file-info { margin-top: 8px; font-size: 13px; color: var(--muted); }
+    .file-name { color: var(--accent); font-weight: 600; }
+    .upload-btn { background: var(--accent); color: #022; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 8px; }
+
+    .deadline { color: var(--warning); font-weight: 600; }
+    .deadline.overdue { color: var(--danger); }
+
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .filter-buttons { display: flex; gap: 8px; }
+    .filter-btn { padding: 6px 12px; border: 1px solid rgba(255,255,255,0.06); background: transparent; color: inherit; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .filter-btn.active { background: var(--accent); color: #022; border-color: var(--accent); }
+
+    @media (max-width: 800px) {
+      .wrap { padding: 12px; }
+      .item-meta { flex-direction: column; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Pre-Joining Checklist</h1>
+        <div class="sub">Complete all required tasks before your start date</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 18px; font-weight: 700; color: var(--accent);" id="completion-percent">0%</div>
+        <div class="sub">Complete</div>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="section-header">
+        <strong>Overall Progress</strong>
+        <div class="sub">Start Date: <span style="color: var(--accent);">15 August 2025</span></div>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+      <div class="progress-text" id="progress-text">0 of 8 tasks completed</div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <strong>Required Tasks</strong>
+        <div class="filter-buttons">
+          <button class="filter-btn active" onclick="filterTasks('all')">All</button>
+          <button class="filter-btn" onclick="filterTasks('pending')">Pending</button>
+          <button class="filter-btn" onclick="filterTasks('completed')">Completed</button>
+        </div>
+      </div>
+
+      <div id="checklist">
+        <!-- Task 1: Attested Degrees -->
+        <div class="checklist-item" data-status="pending" data-category="documents">
+          <div class="checkbox" onclick="toggleTask(this)"></div>
+          <div class="item-content">
+            <div class="item-title">Submit Attested Degree Certificates</div>
+            <div class="item-desc">Upload copies of all degree certificates that have been attested by the UAE Ministry of Education and Ministry of Foreign Affairs.</div>
+            <div class="item-meta">
+              <span class="item-status status-pending">Pending</span>
+              <span class="deadline">Deadline: 1 August 2025</span>
+            </div>
+            <div class="upload-section" id="upload-degrees">
+              <div class="file-upload" style="position: relative;">
+                <input type="file" id="degrees-file" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="handleFileUpload(this, 'degrees')">
+                <div>📄 Click to upload attested degree certificates</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">PDF, JPG, PNG (Max 5MB each)</div>
+              </div>
+              <div class="file-info" id="degrees-info"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task 2: Medical Check-up -->
+        <div class="checklist-item" data-status="pending" data-category="health">
+          <div class="checkbox" onclick="toggleTask(this)"></div>
+          <div class="item-content">
+            <div class="item-title">Complete Medical Check-up</div>
+            <div class="item-desc">Schedule and complete a medical examination at an approved medical center. Upload the medical fitness certificate.</div>
+            <div class="item-meta">
+              <span class="item-status status-pending">Pending</span>
+              <span class="deadline">Deadline: 5 August 2025</span>
+            </div>
+            <div class="upload-section" id="upload-medical">
+              <div class="file-upload" style="position: relative;">
+                <input type="file" id="medical-file" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'medical')">
+                <div>📄 Click to upload medical fitness certificate</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">PDF, JPG, PNG (Max 5MB)</div>
+              </div>
+              <div class="file-info" id="medical-info"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task 3: Security Clearance -->
+        <div class="checklist-item" data-status="pending" data-category="security">
+          <div class="checkbox" onclick="toggleTask(this)"></div>
+          <div class="item-content">
+            <div class="item-title">Provide Security Clearance</div>
+            <div class="item-desc">Submit security clearance certificate from your home country or UAE authorities (if applicable).</div>
+            <div class="item-meta">
+              <span class="item-status status-pending">Pending</span>
+              <span class="deadline">Deadline: 8 August 2025</span>
+            </div>
+            <div class="upload-section" id="upload-security">
+              <div class="file-upload" style="position: relative;">
+                <input type="file" id="security-file" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'security')">
+                <div>📄 Click to upload security clearance certificate</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">PDF, JPG, PNG (Max 5MB)</div>
+              </div>
+              <div class="file-info" id="security-info"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task 4: Good Conduct Certificate -->
+        <div class="checklist-item" data-status="pending" data-category="documents">
+          <div class="checkbox" onclick="toggleTask(this)"></div>
+          <div class="item-content">
+            <div class="item-title">Upload Good Conduct Certificate</div>
+            <div class="item-desc">Provide a certificate of good conduct from your home country or previous country of residence (attested if required).</div>
+            <div class="item-meta">
+              <span class="item-status status-pending">Pending</span>
+              <span class="deadline">Deadline: 8 August 2025</span>
+            </div>
+            <div class="upload-section" id="upload-conduct">
+              <div class="file-upload" style="position: relative;">
+                <input type="file" id="conduct-file" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'conduct')">
+                <div>📄 Click to upload good conduct certificate</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">PDF, JPG, PNG (Max 5MB)</div>
+              </div>
+              <div class="file-info" id="conduct-info"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task 5: Passport Copy -->
+        <div class="checklist-item" data-status="pending" data-category="documents">
+          <div class="checkbox" onclick="toggleTask(this)"></div>
+          <div class="item-content">
+            <div class="item-title">Submit Valid Passport Copy</div>
+            <div class="item-desc">Upload a clear copy of your passport (all pages) with at least 6 months validity remaining.</div>
+            <div class="item-meta">
+              <span class="item-status status-pending">Pending</span>
+              <span class="deadline">Deadline: 1 August 2025</span>
+            </div>
+            <div class="upload-section" id="upload-passport">
+              <div class="file-upload" style="position: relative;">
+                <input type="file" id="passport-file" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="handleFileUpload(this, 'passport')">
+                <div>📄 Click to upload passport copy</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">PDF, JPG, PNG (Max 5MB each)</div>
+              </div>
+              <div class="file-info" id="passport-info"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task 6: Visa Documents -->
+        <div class="checklist-item" data-status="pending" data-category="documents">
+          <div class="checkbox" onclick="toggleTask(this)"></div>
+          <div class="item-content">
+            <div class="item-title">Submit Visa Documents</div>
+            <div class="item-desc">If applicable, provide current visa copy and any related immigration documents.</div>
+            <div class="item-meta">
+              <span class="item-status status-pending">Pending</span>
+              <span class="deadline">Deadline: 5 August 2025</span>
+            </div>
+            <div class="upload-section" id="upload-visa">
+              <div class="file-upload" style="position: relative;">
+                <input type="file" id="visa-file" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload(this, 'visa')">
+                <div>📄 Click to upload visa documents</div>
+                <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">PDF, JPG, PNG (Max 5MB)</div>
+              </div>
+              <div class="file-info" id="visa-info"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task 7: Bank Details -->
+        <div class="checklist-item" data-status="pending" data-category="administrative">
+          <div class="checkbox" onclick="toggleTask(this)"></div>
+          <div class="item-content">
+            <div class="item-title">Provide Bank Account Details</div>
+            <div class="item-desc">Submit bank account information for salary transfer (UAE bank account preferred).</div>
+            <div class="item-meta">
+              <span class="item-status status-pending">Pending</span>
+              <span class="deadline">Deadline: 10 August 2025</span>
+            </div>
+            <div class="upload-section" id="upload-bank">
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; margin-bottom: 4px; font-size: 13px;">Bank Name</label>
+                <input type="text" id="bank-name" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: inherit;">
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; margin-bottom: 4px; font-size: 13px;">Account Number</label>
+                <input type="text" id="bank-account" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: inherit;">
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; margin-bottom: 4px; font-size: 13px;">IBAN</label>
+                <input type="text" id="bank-iban" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: inherit;">
+              </div>
+              <button class="upload-btn" onclick="submitBankDetails()">Submit Bank Details</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task 8: Emergency Contact -->
+        <div class="checklist-item" data-status="pending" data-category="administrative">
+          <div class="checkbox" onclick="toggleTask(this)"></div>
+          <div class="item-content">
+            <div class="item-title">Provide Emergency Contact Information</div>
+            <div class="item-desc">Submit contact details for emergency situations (name, relationship, phone, email).</div>
+            <div class="item-meta">
+              <span class="item-status status-pending">Pending</span>
+              <span class="deadline">Deadline: 10 August 2025</span>
+            </div>
+            <div class="upload-section" id="upload-emergency">
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; margin-bottom: 4px; font-size: 13px;">Contact Name</label>
+                <input type="text" id="emergency-name" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: inherit;">
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; margin-bottom: 4px; font-size: 13px;">Relationship</label>
+                <input type="text" id="emergency-relation" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: inherit;">
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; margin-bottom: 4px; font-size: 13px;">Phone Number</label>
+                <input type="tel" id="emergency-phone" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: inherit;">
+              </div>
+              <div style="margin-bottom: 12px;">
+                <label style="display: block; margin-bottom: 4px; font-size: 13px;">Email</label>
+                <input type="email" id="emergency-email" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; color: inherit;">
+              </div>
+              <button class="upload-btn" onclick="submitEmergencyContact()">Submit Contact Information</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let completedTasks = 0;
+    const totalTasks = 8;
+
+    function updateProgress() {
+      const percent = Math.round((completedTasks / totalTasks) * 100);
+      document.getElementById('completion-percent').textContent = percent + '%';
+      document.getElementById('progress-fill').style.width = percent + '%';
+      document.getElementById('progress-text').textContent = `${completedTasks} of ${totalTasks} tasks completed`;
+    }
+
+    function toggleTask(checkbox) {
+      const item = checkbox.closest('.checklist-item');
+      const isCompleted = checkbox.classList.contains('checked');
+
+      if (isCompleted) {
+        checkbox.classList.remove('checked');
+        item.classList.remove('completed');
+        item.dataset.status = 'pending';
+        item.querySelector('.item-status').textContent = 'Pending';
+        item.querySelector('.item-status').className = 'item-status status-pending';
+        completedTasks--;
+      } else {
+        checkbox.classList.add('checked');
+        item.classList.add('completed');
+        item.dataset.status = 'completed';
+        item.querySelector('.item-status').textContent = 'Completed';
+        item.querySelector('.item-status').className = 'item-status status-completed';
+        completedTasks++;
+      }
+
+      updateProgress();
+    }
+
+    function handleFileUpload(input, type) {
+      const infoEl = document.getElementById(type + '-info');
+      if (input.files && input.files.length > 0) {
+        const files = Array.from(input.files);
+        const fileNames = files.map(f => f.name).join(', ');
+        const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+        const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+
+        if (totalSize > 5 * 1024 * 1024) {
+          infoEl.innerHTML = '<span style="color: var(--danger);">File size exceeds 5MB limit</span>';
+          return;
+        }
+
+        infoEl.innerHTML = `<span class="file-name">✓ ${fileNames}</span> (${sizeMB} MB) - Document received`;
+
+        // Auto-check the task when file is uploaded
+        const item = input.closest('.checklist-item');
+        const checkbox = item.querySelector('.checkbox');
+        if (!checkbox.classList.contains('checked')) {
+          toggleTask(checkbox);
+        }
+      }
+    }
+
+    function submitBankDetails() {
+      const bankName = document.getElementById('bank-name').value;
+      const account = document.getElementById('bank-account').value;
+      const iban = document.getElementById('bank-iban').value;
+
+      if (bankName && account && iban) {
+        alert('Bank details submitted successfully!');
+        const item = document.getElementById('upload-bank').closest('.checklist-item');
+        const checkbox = item.querySelector('.checkbox');
+        if (!checkbox.classList.contains('checked')) {
+          toggleTask(checkbox);
+        }
+      } else {
+        alert('Please fill in all bank details');
+      }
+    }
+
+    function submitEmergencyContact() {
+      const name = document.getElementById('emergency-name').value;
+      const relation = document.getElementById('emergency-relation').value;
+      const phone = document.getElementById('emergency-phone').value;
+      const email = document.getElementById('emergency-email').value;
+
+      if (name && relation && phone && email) {
+        alert('Emergency contact information submitted successfully!');
+        const item = document.getElementById('upload-emergency').closest('.checklist-item');
+        const checkbox = item.querySelector('.checkbox');
+        if (!checkbox.classList.contains('checked')) {
+          toggleTask(checkbox);
+        }
+      } else {
+        alert('Please fill in all emergency contact fields');
+      }
+    }
+
+    function filterTasks(filter) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const items = document.querySelectorAll('.checklist-item');
+      items.forEach(item => {
+        if (filter === 'all') {
+          item.style.display = 'flex';
+        } else if (filter === 'pending') {
+          item.style.display = item.dataset.status === 'pending' ? 'flex' : 'none';
+        } else if (filter === 'completed') {
+          item.style.display = item.dataset.status === 'completed' ? 'flex' : 'none';
+        }
+      });
+    }
+
+    // Initialize
+    updateProgress();
+  </script>
+  
+  <!-- Authentication Check (optional for new faculty) -->
+  <!-- <script src="auth_check.js"></script> -->
+</body>
+</html>
+

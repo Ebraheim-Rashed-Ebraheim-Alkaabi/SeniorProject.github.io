@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UoS Faculty Recruitment System - Main Portal</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: linear-gradient(135deg, #003366 0%, #004c99 100%); color: white; min-height: 100vh; padding: 2rem; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { text-align: center; font-size: 2.5rem; margin-bottom: 1rem; }
+    .subtitle { text-align: center; font-size: 1.2rem; margin-bottom: 3rem; opacity: 0.9; }
+    .modules { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+    .module-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s; }
+    .module-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.15); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .module-card h2 { font-size: 1.5rem; margin-bottom: 1rem; color: #06b6d4; }
+    .module-card p { margin-bottom: 1.5rem; opacity: 0.9; line-height: 1.6; }
+    .module-links { display: flex; flex-direction: column; gap: 0.8rem; }
+    .module-links a { color: white; text-decoration: none; padding: 0.8rem 1.2rem; background: rgba(255,255,255,0.1); border-radius: 8px; transition: all 0.3s; border: 1px solid rgba(255,255,255,0.2); }
+    .module-links a:hover { background: rgba(255,255,255,0.2); transform: translateX(5px); }
+    .badge { display: inline-block; background: #e60000; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.75rem; margin-left: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏛️ University of Sharjah</h1>
+    <p class="subtitle">Faculty Recruitment & Onboarding System</p>
+
+    <div class="modules">
+      <!-- Public Portal -->
+      <div class="module-card">
+        <h2>🌐 Public-Facing Portal</h2>
+        <p>External candidates interact with these pages to view vacancies and apply for positions.</p>
+        <div class="module-links">
+          <a href="public_facing_applicant_portal_module/index.html">🏠 Home Page</a>
+          <a href="public_facing_applicant_portal_module/vacancies.html">📋 Job Vacancies</a>
+          <a href="public_facing_applicant_portal_module/apply.html">✍️ Apply Now</a>
+          <a href="public_facing_applicant_portal_module/applicant-dashboard.html">📊 My Application Dashboard</a>
+        </div>
+      </div>
+
+      <!-- Admin Portal -->
+      <div class="module-card">
+        <h2>👥 Internal Admin Portal</h2>
+        <p>HR, HoD, Dean, and Central Committee use these pages for recruitment management.</p>
+        <div class="module-links">
+          <a href="University_Recruitment_System/talent_request_submission_form.html">📝 Talent Request Form</a>
+          <a href="University_Recruitment_System/recruitment_dashboard_hr_view.html">📈 Recruitment Dashboard</a>
+          <a href="University_Recruitment_System/application_review_interface.html">🔍 Application Review</a>
+          <a href="University_Recruitment_System/interview_scheduling_feedback.html">📅 Interview Scheduling</a>
+        </div>
+      </div>
+
+      <!-- Onboarding -->
+      <div class="module-card">
+        <h2>🎓 Onboarding Module</h2>
+        <p>Post-offer onboarding for new faculty members and HR management.</p>
+        <div class="module-links">
+          <a href="University_Recruitment_System/pre_joining_checklist.html">✅ Pre-Joining Checklist</a>
+          <a href="University_Recruitment_System/hr_onboarding_management.html">👨‍💼 HR Onboarding Management</a>
+          <a href="University_Recruitment_System/new_faculty_welcome.html">👋 Welcome & Induction</a>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 3rem; opacity: 0.8;">
+      <p>Server running on: <strong>http://localhost:8000</strong></p>
+      <p style="margin-top: 1rem; font-size: 0.9rem;">All modules are functional and ready for testing</p>
+    </div>
+  </div>
+</body>
+</html>
+

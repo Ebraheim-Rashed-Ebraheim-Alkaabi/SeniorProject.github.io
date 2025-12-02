@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Talent Request Submission — HoD</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#94a3b8;--accent:#06b6d4;--radius:12px;color:#e6eef6;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071026);}
+    .wrap{max-width:900px;margin:28px auto;padding:20px}
+    h1{font-size:20px;margin:0}
+    .sub{color:var(--muted);font-size:13px}
+    .card{background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.02));padding:16px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(2,6,23,0.6);margin-top:14px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=text],textarea,input[type=date],select{width:100%;padding:10px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
+    textarea{min-height:70px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{margin-bottom:1px}
+    .small{font-size:13px;color:var(--muted)}
+    .actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+    button{padding:10px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+    .btn-primary{background:var(--accent);color:#022}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
+    .file-info{margin-top:8px;font-size:13px;color:var(--muted)}
+    .error{color:#ffb4b4;font-size:13px;margin-top:6px}
+    @media(max-width:800px){.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Talent Request Submission</h1>
+      <div class="sub">Used by Head of Department to request new faculty hires. Attach official UoS advertisement document.</div>
+    </header>
+
+    <form id="request-form" class="card" novalidate>
+      <div class="field">
+        <label for="title">Academic title / position</label>
+        <input id="title" name="title" type="text" placeholder="e.g. Assistant Professor, Computer Science" required />
+        <div class="error hidden" id="err-title"></div>
+      </div>
+
+      <div class="field">
+        <label for="description">Job description</label>
+        <textarea rows="2" id="description" name="description" placeholder="Brief summary of responsibilities and expectations" required></textarea>
+        <div class="error hidden" id="err-desc"></div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="start">Proposed start date</label>
+          <input id="start" name="start" type="date" required />
+          <div class="error hidden" id="err-start"></div>
+        </div>
+
+        <div class="field">
+          <label for="quals">Required qualifications</label>
+          <select id="quals" name="quals" required>
+            <option value="">Select minimum qualification</option>
+            <option>PhD</option>
+            <option>PhD (with postdoc)</option>
+            <option>Masters (industry experience)</option>
+            <option>Bachelors (rare)</option>
+          </select>
+          <div class="error hidden" id="err-quals"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="emirati">Emirati candidate preference</label>
+        <select id="emirati" name="emirati">
+          <option value="no">No preference</option>
+          <option value="yes">Yes, preference to Emirati candidates</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="advert">Upload official advertisement (UoS format, PDF preferred)</label>
+        <input id="advert" name="advert" type="file" accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+        <div class="file-info" id="file-info">No file selected.</div>
+        <div class="error hidden" id="err-file"></div>
+      </div>
+
+      <div class="field">
+        <label for="notes">Additional notes (internal)</label>
+        <textarea rows="2" id="notes" name="notes" placeholder="Budget considerations, justification, replacement vs new role"></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-ghost" id="preview-btn">Preview submission</button>
+        <button type="submit" class="btn-primary">Submit request</button>
+      </div>
+    </form>
+
+    <div id="preview" class="card hidden" style="white-space:pre-wrap;margin-top:12px"></div>
+  </div>
+
+  <script>
+    const form=document.getElementById('request-form');
+    const fileInput=document.getElementById('advert');
+    const fileInfo=document.getElementById('file-info');
+    const previewEl=document.getElementById('preview');
+
+    fileInput.addEventListener('change',()=>{
+      const f=fileInput.files[0];
+      if(!f){fileInfo.textContent='No file selected.'; return}
+      // basic validation: size < 5MB and allowed types
+      const allowed=['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if(!allowed.includes(f.type)){
+        document.getElementById('err-file').textContent='Unsupported file type. Please upload PDF or Word document.'; document.getElementById('err-file').classList.remove('hidden'); fileInfo.textContent=''; return;
+      }
+      if(f.size>5*1024*1024){document.getElementById('err-file').textContent='File too large. Max 5MB.'; document.getElementById('err-file').classList.remove('hidden'); fileInfo.textContent=''; return}
+      document.getElementById('err-file').classList.add('hidden');
+      fileInfo.textContent=`Selected: ${f.name} (${Math.round(f.size/1024)} KB)`;
+    });
+
+    function clearErrors(){document.querySelectorAll('.error').forEach(e=>{e.textContent=''; e.classList.add('hidden')});}
+
+    form.addEventListener('submit',e=>{
+      e.preventDefault(); clearErrors();
+      const data={
+        title:form.title.value.trim(),
+        description:form.description.value.trim(),
+        start:form.start.value,
+        quals:form.quals.value,
+        emirati:form.emirati.value,
+        notes:form.notes.value.trim(),
+        advert: fileInput.files[0] || null
+      };
+      let ok=true;
+      if(!data.title){document.getElementById('err-title').textContent='Title required.'; document.getElementById('err-title').classList.remove('hidden'); ok=false}
+      if(!data.description){document.getElementById('err-desc').textContent='Job description required.'; document.getElementById('err-desc').classList.remove('hidden'); ok=false}
+      if(!data.start){document.getElementById('err-start').textContent='Start date required.'; document.getElementById('err-start').classList.remove('hidden'); ok=false}
+      if(!data.quals){document.getElementById('err-quals').textContent='Select minimum qualification.'; document.getElementById('err-quals').classList.remove('hidden'); ok=false}
+      if(data.advert && data.advert.size>5*1024*1024){document.getElementById('err-file').textContent='File too large. Max 5MB.'; document.getElementById('err-file').classList.remove('hidden'); ok=false}
+      if(!ok) return;
+
+      // Mock submission: serialize and show preview. If file present, create object URL for download preview.
+      let out = `--- Talent request preview ---\nTitle: ${data.title}\nStart date: ${data.start}\nQualification: ${data.quals}\nEmirati preference: ${data.emirati}\n\nJob description:\n${data.description}\n\nNotes:\n${data.notes}\n`;
+      if(data.advert){out += `\nAttached document: ${data.advert.name} (${Math.round(data.advert.size/1024)} KB)`;}
+
+      previewEl.textContent = out;
+      previewEl.classList.remove('hidden');
+
+      // create a downloadable copy of the uploaded file so the HoD can verify
+      if(data.advert){
+        const linkId='download-advert';
+        // revoke previous objectURL if exists
+        if(window._advertObjectUrl){URL.revokeObjectURL(window._advertObjectUrl);}
+        window._advertObjectUrl = URL.createObjectURL(data.advert);
+        if(!document.getElementById(linkId)){
+          const a=document.createElement('a'); a.id=linkId; a.href=window._advertObjectUrl; a.download=data.advert.name; a.textContent='Download attached advert'; a.style.display='inline-block'; a.style.marginTop='10px'; a.className='small'; previewEl.appendChild(document.createElement('br')); previewEl.appendChild(a);
+        } else {const a=document.getElementById(linkId); a.href=window._advertObjectUrl; a.download=data.advert.name}
+      }
+
+      // final mock submit: show toast and clear form after short delay
+      setTimeout(()=>{alert('Request submitted (mock). Internal tracking ID: TR-'+Math.floor(Math.random()*90000+10000)); form.reset(); fileInfo.textContent='No file selected.'; previewEl.classList.add('hidden');}, 400);
+    });
+
+    document.getElementById('preview-btn').addEventListener('click',()=>{form.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true}));});
+  </script>
+  
+  <!-- Authentication Check -->
+  <script src="auth_check.js"></script>
+</body>
+</html>

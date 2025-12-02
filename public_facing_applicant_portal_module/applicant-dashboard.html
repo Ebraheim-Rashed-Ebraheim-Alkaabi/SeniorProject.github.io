@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Application – UoS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f5f7fa; color: #333; }
+    header { background: #003366; color: white; padding: 1rem 2rem; text-align: center; }
+    nav {
+      background: #004c99;
+      padding: 0.8rem;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    nav a { color: white; text-decoration: none; font-weight: bold; }
+    main {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    h2 { margin-bottom: 1.5rem; color: #003366; }
+
+    .status-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .status-Received { background: #4CAF50; }
+    .status-UnderReview { background: #2196F3; }
+    .status-Interview { background: #FF9800; }
+    .status-Offer { background: #9C27B0; }
+    .status-Rejected { background: #f44336; }
+
+    .timeline {
+      position: relative;
+      margin: 2rem 0;
+      padding-left: 2rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 10px;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background: #004c99;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 1.5rem;
+      padding-left: 2rem;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 2px;
+      top: 6px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #004c99;
+      border: 3px solid white;
+      box-shadow: 0 0 0 2px #004c99;
+    }
+    .timeline-item.completed::before {
+      background: #10b981;
+      box-shadow: 0 0 0 2px #10b981;
+    }
+    .timeline-item.pending::before {
+      background: #ffc107;
+      box-shadow: 0 0 0 2px #ffc107;
+    }
+    .timeline-date {
+      font-weight: bold;
+      color: #004c99;
+      margin-bottom: 0.3rem;
+    }
+    .timeline-content {
+      color: #666;
+    }
+
+    /* Notification/Messaging Center */
+    .notification-center {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .tab {
+      flex: 1;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      font-weight: 600;
+      color: #666;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .tab.active {
+      color: #004c99;
+      background: white;
+    }
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #004c99;
+    }
+    .tab-badge {
+      background: #e60000;
+      color: white;
+      border-radius: 12px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 1.5rem;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    .notification-item, .message-item {
+      padding: 1rem;
+      border-left: 4px solid #004c99;
+      background: #f8f9fa;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .notification-item:hover, .message-item:hover {
+      background: #e3f2fd;
+      transform: translateX(4px);
+    }
+    .notification-item.unread, .message-item.unread {
+      background: #e3f2fd;
+      border-left-color: #e60000;
+      font-weight: 600;
+    }
+    .notification-header, .message-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .notification-title, .message-title {
+      font-weight: bold;
+      color: #003366;
+    }
+    .notification-time, .message-time {
+      font-size: 0.85rem;
+      color: #999;
+    }
+    .notification-content, .message-content {
+      color: #666;
+      line-height: 1.6;
+    }
+    .message-sender {
+      color: #004c99;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #999;
+    }
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .action-link {
+      color: #004c99;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border: 1px solid #004c99;
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+    .action-link:hover {
+      background: #004c99;
+      color: white;
+    }
+    .action-link.danger {
+      color: #e60000;
+      border-color: #e60000;
+    }
+    .action-link.danger:hover {
+      background: #e60000;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>My Application Dashboard</h1>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="vacancies.html">Job Vacancies</a></li>
+      <li><a href="apply.html">Apply Now</a></li>
+      <li><a href="applicant-dashboard.html">My Application</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Application Status</h2>
+
+    <div class="status-card">
+      <h3>Assistant Professor – Computer Science (Emirati Track)</h3>
+      <span class="status-badge status-UnderReview">Under Department Review</span>
+      <p style="margin-bottom: 0.5rem;"><strong>Submitted on:</strong> 15 June 2025</p>
+      <p style="margin-bottom: 1rem;"><strong>Application ID:</strong> UOS-FAC-2025-0876</p>
+
+      <div class="timeline">
+        <div class="timeline-item completed">
+          <div class="timeline-date">15 Jun 2025</div>
+          <div class="timeline-content">Application received and acknowledged</div>
+        </div>
+        <div class="timeline-item completed">
+          <div class="timeline-date">16 Jun 2025</div>
+          <div class="timeline-content">Documents verified by HR</div>
+        </div>
+        <div class="timeline-item completed">
+          <div class="timeline-date">17 Jun 2025</div>
+          <div class="timeline-content">Forwarded to Department Hiring Committee</div>
+        </div>
+        <div class="timeline-item pending">
+          <div class="timeline-date">Estimated: 25-30 Jun 2025</div>
+          <div class="timeline-content">Interview scheduling (if shortlisted)</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">TBD</div>
+          <div class="timeline-content">College Review</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">TBD</div>
+          <div class="timeline-content">Central Committee Review</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-date">TBD</div>
+          <div class="timeline-content">Final Decision</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification & Messaging Center -->
+    <div class="notification-center">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('notifications')">
+          Notifications
+          <span class="tab-badge" id="notification-count">3</span>
+        </button>
+        <button class="tab" onclick="switchTab('messages')">
+          Messages
+          <span class="tab-badge" id="message-count">2</span>
+        </button>
+      </div>
+
+      <!-- Notifications Tab -->
+      <div id="notifications-tab" class="tab-content active">
+        <div class="notification-item unread" onclick="markAsRead(this)">
+          <div class="notification-header">
+            <div class="notification-title">Application Status Update</div>
+            <div class="notification-time">2 hours ago</div>
+          </div>
+          <div class="notification-content">
+            Your application has been forwarded to the Department Hiring Committee for review. You will be notified of the next steps within 5-7 business days.
+          </div>
+        </div>
+
+        <div class="notification-item unread" onclick="markAsRead(this)">
+          <div class="notification-header">
+            <div class="notification-title">Document Verification Complete</div>
+            <div class="notification-time">1 day ago</div>
+          </div>
+          <div class="notification-content">
+            All submitted documents have been verified. Your application is now under review by the Department of Computer Science.
+          </div>
+        </div>
+
+        <div class="notification-item unread" onclick="markAsRead(this)">
+          <div class="notification-header">
+            <div class="notification-title">Application Received</div>
+            <div class="notification-time">2 days ago</div>
+          </div>
+          <div class="notification-content">
+            Thank you for applying to the University of Sharjah. We have received your application for the Assistant Professor position (Emirati Track) in Computer Science.
+          </div>
+        </div>
+
+        <div class="notification-item" onclick="markAsRead(this)">
+          <div class="notification-header">
+            <div class="notification-title">Welcome to UoS Recruitment Portal</div>
+            <div class="notification-time">3 days ago</div>
+          </div>
+          <div class="notification-content">
+            Welcome! You can track your application status, view messages, and receive updates through this dashboard.
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Tab -->
+      <div id="messages-tab" class="tab-content">
+        <div class="message-item unread" onclick="markAsRead(this)">
+          <div class="message-header">
+            <div class="message-title">Message from HR Department</div>
+            <div class="message-time">1 day ago</div>
+          </div>
+          <div class="message-sender">From: HR Recruitment Team</div>
+          <div class="message-content">
+            Dear Applicant,<br><br>
+            Thank you for your interest in joining the University of Sharjah. Your application for the Assistant Professor position in Computer Science (Emirati Track) has been received and is currently under review.<br><br>
+            The Department Hiring Committee will review your credentials and qualifications. If you are shortlisted, you will be contacted to schedule an interview. We appreciate your patience during this process.<br><br>
+            Best regards,<br>
+            UoS HR Department
+          </div>
+        </div>
+
+        <div class="message-item unread" onclick="markAsRead(this)">
+          <div class="message-header">
+            <div class="message-title">Document Submission Confirmation</div>
+            <div class="message-time">2 days ago</div>
+          </div>
+          <div class="message-sender">From: System Administrator</div>
+          <div class="message-content">
+            Your application documents have been successfully uploaded and received. The verification process will begin shortly.
+          </div>
+        </div>
+
+        <div class="message-item" onclick="markAsRead(this)">
+          <div class="message-header">
+            <div class="message-title">Application Submission Confirmation</div>
+            <div class="message-time">3 days ago</div>
+          </div>
+          <div class="message-sender">From: System Administrator</div>
+          <div class="message-content">
+            Your application has been successfully submitted. Application ID: UOS-FAC-2025-0876. Please save this ID for future reference.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a href="apply.html" class="action-link">Edit Application</a>
+      <a href="vacancies.html" class="action-link">View Other Positions</a>
+      <a href="#" class="action-link danger" onclick="if(confirm('Are you sure you want to withdraw your application?')) alert('Application withdrawal request submitted.'); return false;">Withdraw Application</a>
+    </div>
+  </main>
+
+  <script>
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Remove active class from all tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Show selected tab content
+      document.getElementById(tabName + '-tab').classList.add('active');
+
+      // Add active class to clicked tab
+      event.target.classList.add('active');
+    }
+
+    function markAsRead(element) {
+      element.classList.remove('unread');
+      updateBadgeCounts();
+    }
+
+    function updateBadgeCounts() {
+      const unreadNotifications = document.querySelectorAll('#notifications-tab .notification-item.unread').length;
+      const unreadMessages = document.querySelectorAll('#messages-tab .message-item.unread').length;
+
+      const notificationBadge = document.getElementById('notification-count');
+      const messageBadge = document.getElementById('message-count');
+
+      if (unreadNotifications > 0) {
+        notificationBadge.textContent = unreadNotifications;
+        notificationBadge.style.display = 'inline-block';
+      } else {
+        notificationBadge.style.display = 'none';
+      }
+
+      if (unreadMessages > 0) {
+        messageBadge.textContent = unreadMessages;
+        messageBadge.style.display = 'inline-block';
+      } else {
+        messageBadge.style.display = 'none';
+      }
+    }
+
+    // Initialize badge counts
+    updateBadgeCounts();
+  </script>
+</body>
+</html>

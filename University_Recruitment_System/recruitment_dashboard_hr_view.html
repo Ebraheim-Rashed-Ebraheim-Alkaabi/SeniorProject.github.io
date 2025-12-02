@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recruitment Dashboard — HR View</title>
+  <style>
+    :root{
+      --bg:#0f1724; /* dark slate */
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#06b6d4; /* cyan */
+      --glass: rgba(255,255,255,0.03);
+      --success:#10b981;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --maxw:1200px;
+      --radius:12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color: #e6eef6;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071026);}
+    .wrap{max-width:var(--maxw);margin:28px auto;padding:20px;}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:20px;margin:0}
+    .sub{color:var(--muted);font-size:13px}
+
+    /* top stats */
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+    .card{background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.02));padding:16px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(2,6,23,0.6);}
+    .stats{display:flex;gap:10px;align-items:center}
+    .stat{flex:1;background:var(--glass);padding:12px;border-radius:10px;text-align:center}
+    .stat .num{font-size:20px;font-weight:600}
+    .stat .label{font-size:12px;color:var(--muted);margin-top:6px}
+
+    /* filter / controls */
+    .controls{display:flex;gap:10px;align-items:center}
+    .search{flex:1}
+    input, select{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:inherit}
+
+    /* pipeline */
+    .pipeline{margin-top:18px}
+    .stages{display:flex;gap:12px;align-items:flex-start;overflow:auto;padding-bottom:8px}
+    .stage{min-width:220px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.02)}
+    .stage h3{margin:0 0 8px 0;font-size:13px}
+    .stage .count{font-weight:700;font-size:18px}
+    .card-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+    .app-card{background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);display:flex;justify-content:space-between;align-items:center}
+    .app-left{display:flex;gap:10px;align-items:center}
+    .avatar{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#123,#246);display:flex;align-items:center;justify-content:center;font-weight:700}
+    .meta{font-size:13px}
+    .meta .title{font-weight:600}
+    .meta .sub{color:var(--muted);font-size:12px}
+    .app-right{display:flex;gap:8px;align-items:center}
+    .pill{padding:6px 8px;border-radius:999px;font-size:12px;background:rgba(255,255,255,0.03)}
+
+    /* details column */
+    .details{display:flex;flex-direction:column;gap:12px}
+    .position{display:flex;flex-direction:column;gap:6px}
+    .position .title{font-weight:700}
+    .position .meta{color:var(--muted);font-size:13px}
+    .progress{height:10px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#60a5fa);width:48%}
+
+    /* small table */
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:10px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:13px}
+    th{color:var(--muted);font-weight:600}
+
+    /* responsiveness */
+    @media (max-width:900px){.grid{grid-template-columns:1fr}.details{order:2}.stages{min-width:unset}.header-actions{display:none}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Recruitment Dashboard — HR View</h1>
+        <div class="sub">Overview of all open positions • Visual pipeline • Quick stats</div>
+      </div>
+      <div class="header-actions controls">
+        <input class="search" placeholder="Search position, candidate, department..." aria-label="search" />
+        <select aria-label="filter by department">
+          <option>All departments</option>
+          <option>Engineering</option>
+          <option>Product</option>
+          <option>Sales</option>
+          <option>Marketing</option>
+        </select>
+        <button onclick="adminLogout()" style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;">Logout</button>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>Quick stats</strong>
+            <div class="sub">Snapshot across all open positions</div>
+          </div>
+          <div style="margin-top:12px" class="stats">
+            <div class="stat">
+              <div class="num" id="stat-applicants">482</div>
+              <div class="label"># applicants</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="stat-under">123</div>
+              <div class="label"># under review</div>
+            </div>
+            <div class="stat">
+              <div class="num" id="stat-hold">34</div>
+              <div class="label"># on hold</div>
+            </div>
+          </div>
+
+          <div class="pipeline">
+            <strong style="display:block;margin-top:14px">Visual pipeline</strong>
+            <div class="stages" id="stages">
+              <!-- Stages will be injected by JS -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <strong>Open positions</strong>
+          <div class="sub" style="margin-top:6px">List of active roles and progress</div>
+          <table aria-label="open positions">
+            <thead>
+              <tr><th>Role</th><th>Department</th><th>Applicants</th><th>Progress</th></tr>
+            </thead>
+            <tbody id="positions-table">
+              <!-- rows injected -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <aside class="details card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div class="position">
+              <div class="title">Senior Frontend Engineer</div>
+              <div class="meta">Engineering • Remote • Requisition #291</div>
+            </div>
+          </div>
+          <div><button onclick="alert('Open candidate review panel')" style="background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px">Review</button></div>
+        </div>
+
+        <div>
+          <div class="sub">Pipeline progress</div>
+          <div class="progress" style="margin-top:8px"><i style="width:64%"></i></div>
+        </div>
+
+        <div>
+          <div class="sub">Recent activity</div>
+          <ul style="padding-left:18px;margin:8px 0;color:var(--muted);font-size:13px">
+            <li>12 applicants added in last 24h</li>
+            <li>2 candidates moved to College Review</li>
+            <li>Offer accepted for Product Manager (Requisition #278)</li>
+          </ul>
+        </div>
+
+        <div style="margin-top:auto">
+          <strong>Top candidates</strong>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+            <div class="app-card">
+              <div class="app-left"><div class="avatar">AA</div><div class="meta"><div class="title">Alex A.</div><div class="sub">Applied • React, TS</div></div></div>
+              <div class="app-right"><div class="pill">Stage: Dept Shortlist</div></div>
+            </div>
+
+            <div class="app-card">
+              <div class="app-left"><div class="avatar">SM</div><div class="meta"><div class="title">Sonia M.</div><div class="sub">Applied • Accessibility</div></div></div>
+              <div class="app-right"><div class="pill">Stage: College Review</div></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+  </div>
+
+  <script>
+    // sample data
+    const STAGES = [
+      { id:'applications', title:'Applications', color:'#0ea5a4', items:[{name:'Ali', role:'Frontend', dept:'Engineering'},{name:'Ahmed', role:'Data Scientist',dept:'Engineering'},{name:'Reem', role:'Designer',dept:'Design'}] },
+      { id:'dept', title:'Department Shortlist', color:'#60a5fa', items:[{name:'Saif', role:'Product',dept:'Product'},{name:'Nour', role:'Frontend',dept:'Engineering'}] },
+      { id:'college', title:'College Review', color:'#f59e0b', items:[{name:'Roda', role:'Designer',dept:'Design'}] },
+      { id:'committee', title:'Central Committee', color:'#8b5cf6', items:[] },
+      { id:'offer', title:'Offer Stage', color:'#10b981', items:[{name:'Ibrahem', role:'Backend',dept:'Engineering'}] }
+    ];
+
+    const POSITIONS = [
+      {role:'Senior Frontend Engineer', dept:'Engineering', applicants:54, progress:64},
+      {role:'Product Manager', dept:'Product', applicants:39, progress:100},
+      {role:'UX Designer', dept:'Design', applicants:21, progress:40},
+      {role:'Data Scientist', dept:'Engineering', applicants:27, progress:22}
+    ];
+
+    // render pipeline
+    const stagesEl = document.getElementById('stages');
+    STAGES.forEach(s=>{
+      const el = document.createElement('div'); el.className='stage';
+      el.innerHTML = `<h3>${s.title}</h3><div class="count">${s.items.length}</div>`;
+      const list = document.createElement('div'); list.className='card-list';
+      s.items.slice(0,6).forEach(it=>{
+        const card = document.createElement('div'); card.className='app-card';
+        card.innerHTML = `<div class="app-left"><div class="avatar">${(it.name.split(' ').map(n=>n[0]).join(''))}</div><div class="meta"><div class="title">${it.name}</div><div class="sub">${it.role} • ${it.dept}</div></div></div><div class="app-right"><div class="pill">${s.title}</div></div>`;
+        list.appendChild(card);
+      });
+      el.appendChild(list);
+      stagesEl.appendChild(el);
+    });
+
+    // render positions table
+    const tbody = document.getElementById('positions-table');
+    POSITIONS.forEach(p=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><strong>${p.role}</strong></td><td>${p.dept}</td><td>${p.applicants}</td><td><div class="progress"><i style="width:${p.progress}%"></i></div></td>`;
+      tbody.appendChild(tr);
+    });
+
+    // stats are derived
+    const totalApplicants = POSITIONS.reduce((s,p)=>s+p.applicants,0);
+    document.getElementById('stat-applicants').textContent = totalApplicants;
+    document.getElementById('stat-under').textContent = 123; // placeholder
+    document.getElementById('stat-hold').textContent = 34; // placeholder
+
+    // simple keyboard search filter
+    document.querySelector('.search').addEventListener('input', e=>{
+      const q = e.target.value.toLowerCase();
+      document.querySelectorAll('#positions-table tr').forEach(tr=>{
+        tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+      document.querySelectorAll('.stage .app-card').forEach(card=>{
+        card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+  </script>
+  
+  <!-- Authentication Check -->
+  <script src="auth_check.js"></script>
+</body>
+</html>

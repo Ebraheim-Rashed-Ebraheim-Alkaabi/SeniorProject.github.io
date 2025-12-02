@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Faculty Vacancies – UoS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f5f7fa; color: #333; }
+    header { background: #003366; color: white; padding: 1rem 2rem; text-align: center; }
+    nav {
+      background: #004c99;
+      padding: 0.8rem;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+    }
+    nav a { color: white; text-decoration: none; font-weight: bold; }
+    nav a:hover { text-decoration: underline; }
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    h2 { margin-bottom: 1.5rem; color: #003366; }
+    .filters {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .filters label { margin-right: 0.8rem; font-weight: bold; }
+    .filters select { padding: 0.4rem; margin-right: 1rem; }
+    .job-card {
+      background: white;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #e60000;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .job-card h3 { margin-bottom: 0.4rem; color: #003366; }
+    .job-meta { color: #666; font-size: 0.9rem; margin-bottom: 0.6rem; }
+    .job-desc { margin-bottom: 0.8rem; line-height: 1.5; }
+    .apply-btn {
+      display: inline-block;
+      background: #004c99;
+      color: white;
+      padding: 0.4rem 1rem;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .apply-btn:hover { background: #003366; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Faculty Vacancies</h1>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="vacancies.html">Job Vacancies</a></li>
+      <li><a href="apply.html">Apply Now</a></li>
+      <li><a href="applicant-dashboard.html">My Application</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Current Openings</h2>
+
+    <div class="filters">
+      <label>Filter by:</label>
+      <select id="collegeFilter">
+        <option value="all">All Colleges</option>
+        <option value="engineering">College of Engineering</option>
+        <option value="sciences">College of Sciences</option>
+        <option value="computing">College of Computing and Informatics</option>
+        <option value="medicine">College of Medicine</option>
+        <option value="business">College of Business Administration</option>
+        <option value="law">College of Law</option>
+        <option value="arts">College of Arts, Humanities and Social Sciences</option>
+      </select>
+      <select id="rankFilter">
+        <option value="all">All Ranks</option>
+        <option value="professor">Professor</option>
+        <option value="associate">Associate Professor</option>
+        <option value="assistant">Assistant Professor</option>
+        <option value="lecturer">Lecturer</option>
+      </select>
+      <select id="trackFilter">
+        <option value="all">All Tracks</option>
+        <option value="regular">Regular Track</option>
+        <option value="emirati">Emirati Track</option>
+      </select>
+      <select id="typeFilter">
+        <option value="all">All Types</option>
+        <option value="teaching">Teaching</option>
+        <option value="clinical">Clinical</option>
+        <option value="research">Research</option>
+      </select>
+    </div>
+
+    <div id="jobListings">
+      <div style="text-align: center; padding: 2rem; color: #666;">
+        Loading vacancies...
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const collegeFilter = document.getElementById('collegeFilter');
+    const rankFilter = document.getElementById('rankFilter');
+    const trackFilter = document.getElementById('trackFilter');
+    const typeFilter = document.getElementById('typeFilter');
+    const jobListings = document.getElementById('jobListings');
+
+    // College code mapping
+    const collegeCodeMap = {
+      'engineering': 'ENG',
+      'sciences': 'SCI',
+      'computing': 'CCI',
+      'medicine': 'MED',
+      'business': 'BUS',
+      'law': 'LAW',
+      'arts': 'AHSS'
+    };
+
+    // Load vacancies from API
+    function loadVacancies() {
+      const filters = {
+        college: collegeFilter.value,
+        rank: rankFilter.value,
+        track: trackFilter.value,
+        type: typeFilter.value,
+        status: 'open'
+      };
+
+      // Build API URL with filters
+      // Using absolute path to ensure correct routing
+      // From: http://localhost/project/public_facing_applicant_portal_module/vacancies.html
+      // To: http://localhost/project/backend/api/vacancies.php
+      let apiUrl = '/project/backend/api/vacancies.php?';
+      const params = [];
+      if (filters.college !== 'all') {
+        params.push('college=' + encodeURIComponent(collegeCodeMap[filters.college] || filters.college));
+      }
+      if (filters.rank !== 'all') {
+        params.push('rank=' + encodeURIComponent(filters.rank));
+      }
+      if (filters.track !== 'all') {
+        params.push('track=' + encodeURIComponent(filters.track));
+      }
+      if (filters.type !== 'all') {
+        params.push('type=' + encodeURIComponent(filters.type));
+      }
+      apiUrl += params.join('&');
+
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.vacancies) {
+            renderJobs(data.vacancies);
+          } else {
+            jobListings.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">No vacancies found.</div>';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading vacancies:', error);
+          jobListings.innerHTML = '<div style="text-align: center; padding: 2rem; color: #e60000;">Error loading vacancies. Please refresh the page.</div>';
+        });
+    }
+
+    // Render job cards
+    function renderJobs(vacancies) {
+      if (vacancies.length === 0) {
+        jobListings.innerHTML = '<div style="text-align: center; padding: 2rem; color: #666; background: white; border-radius: 6px;">No positions match your filters. Please adjust your selection.</div>';
+        return;
+      }
+
+      jobListings.innerHTML = vacancies.map(vacancy => {
+        const postedDate = new Date(vacancy.posted_date).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        
+        const collegeCode = vacancy.college_code ? vacancy.college_code.toLowerCase() : '';
+        const rank = vacancy.rank;
+        const track = vacancy.track;
+        const type = vacancy.type;
+
+        return `
+          <div class="job-card" data-college="${collegeCode}" data-rank="${rank}" data-track="${track}" data-type="${type}">
+            <h3>${vacancy.title}</h3>
+            <div class="job-meta">${vacancy.college_name || 'College'} • ${track.charAt(0).toUpperCase() + track.slice(1)} Track • ${type.charAt(0).toUpperCase() + type.slice(1)} • Posted: ${postedDate}</div>
+            <p class="job-desc">${vacancy.description}</p>
+            <a href="apply.html?vacancy_id=${vacancy.id}" class="apply-btn">Apply Now</a>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Filter jobs
+    function filterJobs() {
+      loadVacancies();
+    }
+
+    // Initialize
+    collegeFilter.addEventListener('change', filterJobs);
+    rankFilter.addEventListener('change', filterJobs);
+    trackFilter.addEventListener('change', filterJobs);
+    typeFilter.addEventListener('change', filterJobs);
+
+    // Load vacancies on page load
+    loadVacancies();
+  </script>
+</body>
+</html>

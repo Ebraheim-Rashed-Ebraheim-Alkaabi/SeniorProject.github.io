@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apply – UoS Faculty Recruitment</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f5f7fa; color: #333; }
+    header { background: #003366; color: white; padding: 1rem 2rem; text-align: center; }
+    nav {
+      background: #004c99;
+      padding: 0.8rem;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    nav a { color: white; text-decoration: none; font-weight: bold; }
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    h2 { margin-bottom: 1.5rem; color: #003366; }
+
+    /* Progress Steps */
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #ddd;
+      z-index: 0;
+    }
+    .step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .step-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.5rem;
+      font-weight: bold;
+      color: #999;
+    }
+    .step.active .step-circle {
+      background: #004c99;
+      border-color: #004c99;
+      color: white;
+    }
+    .step.completed .step-circle {
+      background: #10b981;
+      border-color: #10b981;
+      color: white;
+    }
+    .step-label {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .step.active .step-label {
+      color: #004c99;
+      font-weight: bold;
+    }
+
+    /* Form Sections */
+    .form-section {
+      background: white;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: none;
+    }
+    .form-section.active {
+      display: block;
+    }
+    .form-section h3 {
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #004c99;
+      color: #004c99;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+    label.required::after {
+      content: ' *';
+      color: #e60000;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #004c99;
+      box-shadow: 0 0 0 3px rgba(0, 76, 153, 0.1);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* File Upload */
+    .file-upload-wrapper {
+      position: relative;
+    }
+    .file-upload {
+      padding: 1.5rem;
+      border: 2px dashed #ccc;
+      border-radius: 6px;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .file-upload:hover {
+      border-color: #004c99;
+      background: #f0f7ff;
+    }
+    .file-upload input[type="file"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    .file-info {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .file-name {
+      color: #004c99;
+      font-weight: 600;
+    }
+
+    /* Navigation Buttons */
+    .form-navigation {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid #eee;
+    }
+    .btn {
+      padding: 0.8rem 2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-primary {
+      background: #004c99;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #003366;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    .btn-submit {
+      background: #e60000;
+      color: white;
+    }
+    .btn-submit:hover {
+      background: #cc0000;
+    }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Publications Section */
+    .publication-item {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      border-left: 4px solid #004c99;
+    }
+    .btn-add {
+      background: #10b981;
+      color: white;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+    .btn-remove {
+      background: #ef4444;
+      color: white;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    /* Error Messages */
+    .error-message {
+      color: #e60000;
+      font-size: 0.85rem;
+      margin-top: 0.3rem;
+      display: none;
+    }
+    .error-message.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Faculty Application Form</h1>
+  </header>
+
+  <nav>
+    <ul>
+      <li><a href="index.html">Home</a></li>
+      <li><a href="vacancies.html">Job Vacancies</a></li>
+      <li><a href="apply.html">Apply Now</a></li>
+      <li><a href="applicant-dashboard.html">My Application</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <h2>Submit Your Application</h2>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+      <div class="step active" data-step="1">
+        <div class="step-circle">1</div>
+        <div class="step-label">Personal Info</div>
+      </div>
+      <div class="step" data-step="2">
+        <div class="step-circle">2</div>
+        <div class="step-label">Academic</div>
+      </div>
+      <div class="step" data-step="3">
+        <div class="step-circle">3</div>
+        <div class="step-label">Publications</div>
+      </div>
+      <div class="step" data-step="4">
+        <div class="step-circle">4</div>
+        <div class="step-label">Residency/Visa</div>
+      </div>
+      <div class="step" data-step="5">
+        <div class="step-circle">5</div>
+        <div class="step-label">Documents</div>
+      </div>
+      <div class="step" data-step="6">
+        <div class="step-circle">6</div>
+        <div class="step-label">Declaration</div>
+      </div>
+    </div>
+
+    <form id="applicationForm" enctype="multipart/form-data">
+      <!-- Step 1: Personal Information -->
+      <div class="form-section active" id="step1">
+        <h3>Personal & Contact Information</h3>
+
+        <div class="form-group">
+          <label for="fullName" class="required">Full Name</label>
+          <input type="text" id="fullName" name="fullName" required>
+          <div class="error-message" id="error-fullName">Please enter your full name</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nationality" class="required">Nationality</label>
+            <select id="nationality" name="nationality" required>
+              <option value="">-- Select --</option>
+              <option value="UAE">UAE National</option>
+              <option value="Other">Other</option>
+            </select>
+            <div class="error-message" id="error-nationality">Please select your nationality</div>
+          </div>
+          <div class="form-group">
+            <label for="dateOfBirth" class="required">Date of Birth</label>
+            <input type="date" id="dateOfBirth" name="dateOfBirth" required>
+            <div class="error-message" id="error-dateOfBirth">Please enter your date of birth</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email" class="required">Email Address</label>
+            <input type="email" id="email" name="email" required>
+            <div class="error-message" id="error-email">Please enter a valid email address</div>
+          </div>
+          <div class="form-group">
+            <label for="phone" class="required">Phone Number</label>
+            <input type="tel" id="phone" name="phone" placeholder="+971 XX XXX XXXX" required>
+            <div class="error-message" id="error-phone">Please enter your phone number</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="address">Current Address</label>
+          <textarea id="address" name="address" placeholder="Street, City, Country"></textarea>
+        </div>
+
+        <div class="form-navigation">
+          <div></div>
+          <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Academic Credentials -->
+      <div class="form-section" id="step2">
+        <h3>Academic Qualifications</h3>
+
+        <div class="form-group">
+          <label for="highestDegree" class="required">Highest Degree</label>
+          <select id="highestDegree" name="highestDegree" required>
+            <option value="">-- Select --</option>
+            <option value="PhD">PhD</option>
+            <option value="Masters">Master's Degree</option>
+            <option value="Other">Other Terminal Degree</option>
+          </select>
+          <div class="error-message" id="error-highestDegree">Please select your highest degree</div>
+        </div>
+
+        <div class="form-group">
+          <label for="degreeField" class="required">Field of Study</label>
+          <input type="text" id="degreeField" name="degreeField" placeholder="e.g., Computer Science, Mechanical Engineering" required>
+          <div class="error-message" id="error-degreeField">Please enter your field of study</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="university" class="required">University Name</label>
+            <input type="text" id="university" name="university" required>
+            <div class="error-message" id="error-university">Please enter university name</div>
+          </div>
+          <div class="form-group">
+            <label for="universityCountry" class="required">Country</label>
+            <input type="text" id="universityCountry" name="universityCountry" required>
+            <div class="error-message" id="error-universityCountry">Please enter country</div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="graduationYear" class="required">Year of Graduation</label>
+            <input type="number" id="graduationYear" name="graduationYear" min="1950" max="2025" required>
+            <div class="error-message" id="error-graduationYear">Please enter graduation year</div>
+          </div>
+          <div class="form-group">
+            <label for="gpa">GPA / Grade (if applicable)</label>
+            <input type="text" id="gpa" name="gpa" placeholder="e.g., 3.8/4.0 or Distinction">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="additionalDegrees">Additional Degrees (if any)</label>
+          <textarea id="additionalDegrees" name="additionalDegrees" placeholder="List any other degrees, certifications, or qualifications"></textarea>
+        </div>
+
+        <div class="form-navigation">
+          <button type="button" class="btn btn-secondary" onclick="prevStep()">← Previous</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Publications -->
+      <div class="form-section" id="step3">
+        <h3>Publications & Research</h3>
+
+        <div class="form-group">
+          <label for="scopusCount">Number of Scopus-Indexed Publications</label>
+          <input type="number" id="scopusCount" name="scopusCount" min="0" placeholder="0">
+          <small style="color: #666; display: block; margin-top: 0.3rem;">Required for Emirati Track positions</small>
+        </div>
+
+        <div class="form-group">
+          <label>List Key Publications (Optional)</label>
+          <div id="publications-list">
+            <!-- Publications will be added here -->
+          </div>
+          <button type="button" class="btn btn-add" onclick="addPublication()">+ Add Publication</button>
+        </div>
+
+        <div class="form-group">
+          <label for="researchInterests">Research Interests</label>
+          <textarea id="researchInterests" name="researchInterests" placeholder="Describe your research areas and interests"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="teachingExperience">Teaching Experience (Years)</label>
+          <input type="number" id="teachingExperience" name="teachingExperience" min="0" placeholder="0">
+        </div>
+
+        <div class="form-navigation">
+          <button type="button" class="btn btn-secondary" onclick="prevStep()">← Previous</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: UAE Residency/Visa Status -->
+      <div class="form-section" id="step4">
+        <h3>UAE Residency & Visa Status</h3>
+
+        <div class="form-group">
+          <label for="residencyStatus" class="required">Current Residency Status</label>
+          <select id="residencyStatus" name="residencyStatus" required>
+            <option value="">-- Select --</option>
+            <option value="UAE National">UAE National</option>
+            <option value="Resident Visa">Resident Visa Holder</option>
+            <option value="Visit Visa">Visit Visa</option>
+            <option value="No Visa">No Current UAE Visa</option>
+          </select>
+          <div class="error-message" id="error-residencyStatus">Please select your residency status</div>
+        </div>
+
+        <div class="form-group" id="visaDetailsGroup" style="display: none;">
+          <label for="visaNumber">Visa Number (if applicable)</label>
+          <input type="text" id="visaNumber" name="visaNumber" placeholder="Enter visa number">
+        </div>
+
+        <div class="form-group" id="visaExpiryGroup" style="display: none;">
+          <label for="visaExpiry">Visa Expiry Date (if applicable)</label>
+          <input type="date" id="visaExpiry" name="visaExpiry">
+        </div>
+
+        <div class="form-group">
+          <label for="passportNumber" class="required">Passport Number</label>
+          <input type="text" id="passportNumber" name="passportNumber" required>
+          <div class="error-message" id="error-passportNumber">Please enter your passport number</div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="passportIssueDate" class="required">Passport Issue Date</label>
+            <input type="date" id="passportIssueDate" name="passportIssueDate" required>
+            <div class="error-message" id="error-passportIssueDate">Please enter issue date</div>
+          </div>
+          <div class="form-group">
+            <label for="passportExpiryDate" class="required">Passport Expiry Date</label>
+            <input type="date" id="passportExpiryDate" name="passportExpiryDate" required>
+            <div class="error-message" id="error-passportExpiryDate">Please enter expiry date</div>
+          </div>
+        </div>
+
+        <div class="form-navigation">
+          <button type="button" class="btn btn-secondary" onclick="prevStep()">← Previous</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Documents Upload -->
+      <div class="form-section" id="step5">
+        <h3>Required Documents</h3>
+        <p style="margin-bottom: 1.5rem; color: #666; font-size: 0.95rem;">
+          Upload scanned copies (PDF, JPG, or PNG format, max 5MB each). All documents must be clear and legible.
+        </p>
+
+        <div class="form-group">
+          <label for="cv" class="required">Curriculum Vitae (CV)</label>
+          <div class="file-upload-wrapper">
+            <div class="file-upload">
+              <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx" required>
+              <div>📄 Click to upload or drag and drop</div>
+              <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">PDF, DOC, DOCX (Max 5MB)</div>
+            </div>
+            <div class="file-info" id="cv-info"></div>
+          </div>
+          <div class="error-message" id="error-cv">Please upload your CV</div>
+        </div>
+
+        <div class="form-group">
+          <label for="coverLetter" class="required">Cover Letter</label>
+          <div class="file-upload-wrapper">
+            <div class="file-upload">
+              <input type="file" id="coverLetter" name="coverLetter" accept=".pdf,.doc,.docx" required>
+              <div>📄 Click to upload or drag and drop</div>
+              <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">PDF, DOC, DOCX (Max 5MB)</div>
+            </div>
+            <div class="file-info" id="coverLetter-info"></div>
+          </div>
+          <div class="error-message" id="error-coverLetter">Please upload your cover letter</div>
+        </div>
+
+        <div class="form-group">
+          <label for="passportCopy" class="required">Passport Copy</label>
+          <div class="file-upload-wrapper">
+            <div class="file-upload">
+              <input type="file" id="passportCopy" name="passportCopy" accept=".pdf,.jpg,.jpeg,.png" required>
+              <div>📄 Click to upload or drag and drop</div>
+              <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">PDF, JPG, PNG (Max 5MB)</div>
+            </div>
+            <div class="file-info" id="passportCopy-info"></div>
+          </div>
+          <div class="error-message" id="error-passportCopy">Please upload passport copy</div>
+        </div>
+
+        <div class="form-group">
+          <label for="degreeCertificates" class="required">Degree Certificates (Attested)</label>
+          <div class="file-upload-wrapper">
+            <div class="file-upload">
+              <input type="file" id="degreeCertificates" name="degreeCertificates" accept=".pdf,.jpg,.jpeg,.png" multiple required>
+              <div>📄 Click to upload or drag and drop</div>
+              <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">PDF, JPG, PNG (Max 5MB each, multiple files allowed)</div>
+            </div>
+            <div class="file-info" id="degreeCertificates-info"></div>
+          </div>
+          <div class="error-message" id="error-degreeCertificates">Please upload degree certificates</div>
+        </div>
+
+        <div class="form-group">
+          <label for="transcripts">Academic Transcripts</label>
+          <div class="file-upload-wrapper">
+            <div class="file-upload">
+              <input type="file" id="transcripts" name="transcripts" accept=".pdf,.jpg,.jpeg,.png" multiple>
+              <div>📄 Click to upload or drag and drop</div>
+              <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">PDF, JPG, PNG (Max 5MB each)</div>
+            </div>
+            <div class="file-info" id="transcripts-info"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="additionalDocuments">Additional Documents (Optional)</label>
+          <div class="file-upload-wrapper">
+            <div class="file-upload">
+              <input type="file" id="additionalDocuments" name="additionalDocuments" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+              <div>📄 Click to upload or drag and drop</div>
+              <div style="font-size: 0.85rem; color: #666; margin-top: 0.5rem;">Any additional supporting documents</div>
+            </div>
+            <div class="file-info" id="additionalDocuments-info"></div>
+          </div>
+        </div>
+
+        <div class="form-navigation">
+          <button type="button" class="btn btn-secondary" onclick="prevStep()">← Previous</button>
+          <button type="button" class="btn btn-primary" onclick="nextStep()">Next →</button>
+        </div>
+      </div>
+
+      <!-- Step 6: Declaration -->
+      <div class="form-section" id="step6">
+        <h3>Declaration & Confirmation</h3>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: flex-start; cursor: pointer;">
+            <input type="checkbox" id="declaration1" name="declaration1" required style="width: auto; margin-right: 0.5rem; margin-top: 0.2rem;">
+            <span>I confirm that all information provided in this application is true, accurate, and complete to the best of my knowledge. I understand that providing false or misleading information may result in disqualification from the recruitment process or termination of employment if discovered after appointment. *</span>
+          </label>
+          <div class="error-message" id="error-declaration1">You must confirm this declaration</div>
+        </div>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: flex-start; cursor: pointer;">
+            <input type="checkbox" id="declaration2" name="declaration2" required style="width: auto; margin-right: 0.5rem; margin-top: 0.2rem;">
+            <span>I declare that I have no prior disciplinary issues, criminal convictions, or professional sanctions that would affect my eligibility for employment at the University of Sharjah. *</span>
+          </label>
+          <div class="error-message" id="error-declaration2">You must confirm this declaration</div>
+        </div>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: flex-start; cursor: pointer;">
+            <input type="checkbox" id="consentBackground" name="consentBackground" required style="width: auto; margin-right: 0.5rem; margin-top: 0.2rem;">
+            <span>I consent to background checks, security clearances, and verification of credentials as required by UoS policy and UAE regulations. *</span>
+          </label>
+          <div class="error-message" id="error-consentBackground">You must provide consent</div>
+        </div>
+
+        <div class="form-group">
+          <label style="display: flex; align-items: flex-start; cursor: pointer;">
+            <input type="checkbox" id="consentData" name="consentData" required style="width: auto; margin-right: 0.5rem; margin-top: 0.2rem;">
+            <span>I consent to the processing of my personal data for recruitment purposes in accordance with UoS data protection policies. *</span>
+          </label>
+          <div class="error-message" id="error-consentData">You must provide consent</div>
+        </div>
+
+        <div class="form-navigation">
+          <button type="button" class="btn btn-secondary" onclick="prevStep()">← Previous</button>
+          <button type="submit" class="btn btn-submit">Submit Application</button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    let currentStep = 1;
+    const totalSteps = 6;
+    let publicationCount = 0;
+
+    // Initialize file upload handlers
+    document.addEventListener('DOMContentLoaded', function() {
+      setupFileUploads();
+      setupResidencyStatusHandler();
+    });
+
+    function setupFileUploads() {
+      const fileInputs = ['cv', 'coverLetter', 'passportCopy', 'degreeCertificates', 'transcripts', 'additionalDocuments'];
+      fileInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+          input.addEventListener('change', function(e) {
+            handleFileUpload(e, id);
+          });
+        }
+      });
+    }
+
+    function handleFileUpload(event, inputId) {
+      const input = event.target;
+      const infoEl = document.getElementById(inputId + '-info');
+
+      if (input.files && input.files.length > 0) {
+        const files = Array.from(input.files);
+        const fileNames = files.map(f => f.name).join(', ');
+        const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+        const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+
+        if (totalSize > 5 * 1024 * 1024) {
+          infoEl.innerHTML = '<span style="color: #e60000;">File size exceeds 5MB limit</span>';
+          input.value = '';
+          return;
+        }
+
+        infoEl.innerHTML = `<span class="file-name">✓ ${fileNames}</span> (${sizeMB} MB)`;
+      } else {
+        infoEl.innerHTML = '';
+      }
+    }
+
+    function setupResidencyStatusHandler() {
+      const residencyStatus = document.getElementById('residencyStatus');
+      const visaDetailsGroup = document.getElementById('visaDetailsGroup');
+      const visaExpiryGroup = document.getElementById('visaExpiryGroup');
+
+      residencyStatus.addEventListener('change', function() {
+        if (this.value === 'Resident Visa') {
+          visaDetailsGroup.style.display = 'block';
+          visaExpiryGroup.style.display = 'block';
+        } else {
+          visaDetailsGroup.style.display = 'none';
+          visaExpiryGroup.style.display = 'none';
+        }
+      });
+    }
+
+    function addPublication() {
+      publicationCount++;
+      const list = document.getElementById('publications-list');
+      const div = document.createElement('div');
+      div.className = 'publication-item';
+      div.innerHTML = `
+        <div class="form-group">
+          <label>Publication Title</label>
+          <input type="text" name="pubTitle${publicationCount}" placeholder="Title of publication">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Journal/Conference</label>
+            <input type="text" name="pubJournal${publicationCount}" placeholder="Journal or conference name">
+          </div>
+          <div class="form-group">
+            <label>Year</label>
+            <input type="number" name="pubYear${publicationCount}" min="1950" max="2025" placeholder="Year">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>DOI / Link (Optional)</label>
+          <input type="url" name="pubLink${publicationCount}" placeholder="https://...">
+        </div>
+        <button type="button" class="btn btn-remove" onclick="this.parentElement.remove()">Remove</button>
+      `;
+      list.appendChild(div);
+    }
+
+    function updateProgressSteps() {
+      document.querySelectorAll('.step').forEach((step, index) => {
+        const stepNum = index + 1;
+        step.classList.remove('active', 'completed');
+        if (stepNum < currentStep) {
+          step.classList.add('completed');
+        } else if (stepNum === currentStep) {
+          step.classList.add('active');
+        }
+      });
+    }
+
+    function validateStep(step) {
+      const section = document.getElementById(`step${step}`);
+      const requiredFields = section.querySelectorAll('[required]');
+      let isValid = true;
+
+      requiredFields.forEach(field => {
+        const errorEl = document.getElementById(`error-${field.id}`);
+        if (!field.value || (field.type === 'checkbox' && !field.checked)) {
+          isValid = false;
+          if (errorEl) {
+            errorEl.classList.add('show');
+          }
+          field.style.borderColor = '#e60000';
+        } else {
+          if (errorEl) {
+            errorEl.classList.remove('show');
+          }
+          field.style.borderColor = '#ccc';
+        }
+      });
+
+      return isValid;
+    }
+
+    function nextStep() {
+      if (validateStep(currentStep)) {
+        if (currentStep < totalSteps) {
+          document.getElementById(`step${currentStep}`).classList.remove('active');
+          currentStep++;
+          document.getElementById(`step${currentStep}`).classList.add('active');
+          updateProgressSteps();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    }
+
+    function prevStep() {
+      if (currentStep > 1) {
+        document.getElementById(`step${currentStep}`).classList.remove('active');
+        currentStep--;
+        document.getElementById(`step${currentStep}`).classList.add('active');
+        updateProgressSteps();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Form submission
+    document.getElementById('applicationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      if (!validateStep(currentStep)) {
+        return;
+      }
+
+      // Get vacancy ID from URL parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const vacancyId = urlParams.get('vacancy_id') || urlParams.get('position');
+      
+      if (!vacancyId) {
+        alert('Error: No vacancy selected. Please go back to vacancies page and click Apply Now.');
+        return;
+      }
+
+      // Collect all form data
+      const formData = new FormData(this);
+      formData.append('vacancy_id', vacancyId);
+
+      // Show loading indicator
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      // Submit to backend API
+      // Using absolute path to ensure correct routing
+      // From: http://localhost/project/public_facing_applicant_portal_module/apply.html
+      // To: http://localhost/project/backend/api/submit_application.php
+      fetch('/project/backend/api/submit_application.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('✅ Application submitted successfully!\n\nApplication ID: ' + data.application_id + '\n\nYou will receive a confirmation email shortly. You can track your application status in your dashboard.');
+          window.location.href = 'applicant-dashboard.html';
+        } else {
+          alert('❌ Error: ' + (data.message || 'Failed to submit application. Please try again.'));
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('❌ Error: Failed to submit application. Please check your connection and try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      });
+    });
+
+    // Allow clicking on step circles to navigate (if previous steps are completed)
+    document.querySelectorAll('.step').forEach((step, index) => {
+      step.addEventListener('click', function() {
+        const stepNum = index + 1;
+        if (stepNum <= currentStep || stepNum === 1) {
+          // Navigate to clicked step if it's current or previous
+          if (stepNum < currentStep) {
+            document.getElementById(`step${currentStep}`).classList.remove('active');
+            currentStep = stepNum;
+            document.getElementById(`step${currentStep}`).classList.add('active');
+            updateProgressSteps();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

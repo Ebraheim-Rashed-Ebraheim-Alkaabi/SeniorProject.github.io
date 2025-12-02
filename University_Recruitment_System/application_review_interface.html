@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Application Review Interface</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#06b6d4;
+      --glass: rgba(255,255,255,0.03);
+      font-family: Inter, ui-sans-serif, system-ui;
+      color:#e6eef6;
+      --radius:12px;
+    }
+    body{margin:0;background:linear-gradient(180deg,var(--bg),#071026);}
+    .wrap{max-width:1200px;margin:28px auto;padding:20px;display:grid;grid-template-columns:1fr 360px;gap:18px;}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    h1{font-size:20px;margin:0}
+    .sub{color:var(--muted);font-size:13px}
+    .card{background:linear-gradient(180deg,var(--card),rgba(255,255,255,0.02));padding:16px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(2,6,23,0.6);}
+    input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:inherit;width:100%;}
+    table{width:100%;border-collapse:collapse;margin-top:8px;}
+    th,td{padding:10px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:13px;}
+    th{color:var(--muted);font-weight:600;}
+    tr:hover{background:rgba(255,255,255,0.02);cursor:pointer;}
+    .filters{display:flex;gap:8px;margin-bottom:10px;}
+    .profile{display:flex;gap:12px;align-items:center;}
+    .avatar{width:60px;height:60px;border-radius:12px;background:linear-gradient(135deg,#123,#246);display:flex;align-items:center;justify-content:center;font-weight:700;}
+    .meta{font-size:13px;}
+    .meta .title{font-weight:600;}
+    .meta .sub{color:var(--muted);}
+    .form-group{margin-top:12px;}
+    label{display:block;font-size:13px;margin-bottom:4px;color:var(--muted);}
+    textarea{min-height:60px;}
+    .buttons{display:flex;gap:10px;margin-top:16px;}
+    button{padding:10px 14px;border:none;border-radius:8px;font-weight:600;cursor:pointer;}
+    .btn-reject{background:#ef4444;color:white;}
+    .btn-recommend{background:#10b981;color:white;}
+    .hidden{display:none;}
+    @media(max-width:900px){.wrap{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section>
+      <header>
+        <div>
+          <h1>Application Review Interface</h1>
+          <div class="sub">Filter and select applicants to review</div>
+        </div>
+      </header>
+      <div class="card">
+        <div class="filters">
+          <input type="text" id="search" placeholder="Search applicant..." />
+          <select id="filter-stage">
+            <option>All stages</option>
+            <option>Department Shortlist</option>
+            <option>College Review</option>
+            <option>Central Committee</option>
+          </select>
+        </div>
+        <table id="applicant-table">
+          <thead><tr><th>Name</th><th>Department</th><th>Stage</th><th>Score</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="card" id="review-panel">
+      <div id="review-empty">Select an applicant to view their profile.</div>
+      <div id="review-content" class="hidden">
+        <div class="profile">
+          <div class="avatar" id="profile-avatar"></div>
+          <div class="meta">
+            <div class="title" id="profile-name"></div>
+            <div class="sub" id="profile-dept"></div>
+            <div class="sub" id="profile-stage"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Technical competence</label>
+          <textarea id="tech"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Behavioral traits</label>
+          <textarea id="behavior"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Values alignment</label>
+          <textarea id="values"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Interview rating (1–5)</label>
+          <select id="rating">
+            <option value="">Select</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Justification</label>
+          <textarea id="justification"></textarea>
+        </div>
+
+        <div class="buttons">
+          <button class="btn-reject" id="reject-btn">Reject</button>
+          <button class="btn-recommend" id="recommend-btn">Recommend</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const applicants=[
+      {name:'Ali', dept:'Engineering', stage:'Department Shortlist', score:'4.2'},
+      {name:'Reem', dept:'Design', stage:'College Review', score:'3.9'},
+      {name:'Ahmed', dept:'Engineering', stage:'Applications', score:'4.0'},
+      {name:'Saif', dept:'Product', stage:'Central Committee', score:'4.5'}
+    ];
+
+    const tbody=document.querySelector('#applicant-table tbody');
+    function renderTable(list){
+      tbody.innerHTML='';
+      list.forEach(a=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${a.name}</td><td>${a.dept}</td><td>${a.stage}</td><td>${a.score}</td>`;
+        tr.addEventListener('click',()=>selectApplicant(a));
+        tbody.appendChild(tr);
+      });
+    }
+    renderTable(applicants);
+
+    function selectApplicant(a){
+      document.getElementById('review-empty').classList.add('hidden');
+      const c=document.getElementById('review-content');
+      c.classList.remove('hidden');
+      document.getElementById('profile-avatar').textContent=a.name.split(' ').map(n=>n[0]).join('');
+      document.getElementById('profile-name').textContent=a.name;
+      document.getElementById('profile-dept').textContent=a.dept;
+      document.getElementById('profile-stage').textContent=a.stage;
+    }
+
+    document.getElementById('search').addEventListener('input',e=>{
+      const q=e.target.value.toLowerCase();
+      const filtered=applicants.filter(a=>a.name.toLowerCase().includes(q));
+      renderTable(filtered);
+    });
+
+    document.getElementById('filter-stage').addEventListener('change',e=>{
+      const val=e.target.value;
+      const filtered=val==='All stages'?applicants:applicants.filter(a=>a.stage===val);
+      renderTable(filtered);
+    });
+
+    document.getElementById('recommend-btn').onclick=()=>{
+      alert('Applicant recommended with justification: '+document.getElementById('justification').value);
+    }
+    document.getElementById('reject-btn').onclick=()=>{
+      alert('Applicant rejected with justification: '+document.getElementById('justification').value);
+    }
+  </script>
+  
+  <!-- Authentication Check -->
+  <script src="auth_check.js"></script>
+</body>
+</html>

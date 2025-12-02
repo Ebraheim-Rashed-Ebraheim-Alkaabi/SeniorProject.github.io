@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HR Onboarding Management – UoS</title>
+  <style>
+    :root {
+      --bg: #0f1724;
+      --card: #0b1220;
+      --muted: #94a3b8;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      color: #e6eef6;
+    }
+    html, body { height: 100%; margin: 0; background: linear-gradient(180deg, var(--bg), #071026); }
+    .wrap { max-width: 1400px; margin: 28px auto; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    h1 { font-size: 24px; margin: 0; }
+    .sub { color: var(--muted); font-size: 14px; }
+    .card { background: linear-gradient(180deg, var(--card), rgba(255,255,255,0.02)); padding: 20px; border-radius: var(--radius); box-shadow: 0 6px 18px rgba(2,6,23,0.6); margin-bottom: 18px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .stat-card { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 10px; text-align: center; }
+    .stat-number { font-size: 32px; font-weight: 700; color: var(--accent); }
+    .stat-label { color: var(--muted); font-size: 14px; margin-top: 8px; }
+
+    .controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    input, select, button { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; color: inherit; }
+    input, select { flex: 1; min-width: 200px; }
+    button { cursor: pointer; font-weight: 600; }
+    .btn-primary { background: var(--accent); color: #022; border-color: var(--accent); }
+    .btn-secondary { background: transparent; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px dashed rgba(255,255,255,0.03); }
+    th { color: var(--muted); font-weight: 600; font-size: 13px; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-complete { background: rgba(16,185,129,0.2); color: var(--success); }
+    .badge-pending { background: rgba(148,163,184,0.2); color: var(--muted); }
+    .badge-overdue { background: rgba(239,68,68,0.2); color: var(--danger); }
+    .badge-in-progress { background: rgba(6,182,212,0.2); color: var(--accent); }
+
+    .progress-cell { display: flex; align-items: center; gap: 8px; }
+    .progress-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.03); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #60a5fa); }
+    .progress-text { font-size: 12px; color: var(--muted); min-width: 50px; }
+
+    .action-buttons { display: flex; gap: 8px; }
+    .btn-small { padding: 6px 12px; font-size: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-view { background: var(--accent); color: #022; }
+    .btn-assign { background: var(--success); color: #022; }
+    .btn-remind { background: var(--warning); color: #022; }
+
+    .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--card); padding: 24px; border-radius: var(--radius); max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .close-btn { background: transparent; border: none; color: var(--muted); font-size: 24px; cursor: pointer; }
+
+    .task-list { display: flex; flex-direction: column; gap: 12px; }
+    .task-item { padding: 12px; background: rgba(255,255,255,0.02); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .task-name { font-weight: 600; }
+    .task-status { font-size: 12px; color: var(--muted); }
+
+    .assign-section { margin-top: 16px; }
+    .assign-section label { display: block; margin-bottom: 8px; font-size: 13px; }
+    .assign-section select { width: 100%; }
+
+    @media (max-width: 1000px) {
+      table { font-size: 13px; }
+      th, td { padding: 8px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>HR Onboarding Management</h1>
+        <div class="sub">Track completion status across all new hires • Assign tasks to HR staff</div>
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">24</div>
+        <div class="stat-label">Total New Hires</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">18</div>
+        <div class="stat-label">On Track</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Needs Attention</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">2</div>
+        <div class="stat-label">Overdue</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="controls">
+        <input type="text" placeholder="Search by name, department, or ID..." id="search-input">
+        <select id="status-filter">
+          <option value="all">All Status</option>
+          <option value="complete">Complete</option>
+          <option value="in-progress">In Progress</option>
+          <option value="pending">Pending</option>
+          <option value="overdue">Overdue</option>
+        </select>
+        <select id="department-filter">
+          <option value="all">All Departments</option>
+          <option value="Engineering">Engineering</option>
+          <option value="Computing">Computing</option>
+          <option value="Medicine">Medicine</option>
+          <option value="Sciences">Sciences</option>
+          <option value="Business">Business</option>
+        </select>
+        <button class="btn-primary" onclick="exportData()">Export Report</button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Department</th>
+            <th>Start Date</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th>Assigned To</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="onboarding-table">
+          <tr>
+            <td><strong>Dr. Ahmed Al-Mansoori</strong><br><span style="color: var(--muted); font-size: 12px;">UOS-ONB-2025-001</span></td>
+            <td>Computer Science</td>
+            <td>15 Aug 2025</td>
+            <td class="progress-cell">
+              <div class="progress-bar"><div class="progress-fill" style="width: 87%"></div></div>
+              <span class="progress-text">7/8</span>
+            </td>
+            <td><span class="badge badge-in-progress">In Progress</span></td>
+            <td>Sarah Johnson</td>
+            <td class="action-buttons">
+              <button class="btn-small btn-view" onclick="viewDetails('001')">View</button>
+              <button class="btn-small btn-assign" onclick="assignTask('001')">Assign</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Dr. Fatima Hassan</strong><br><span style="color: var(--muted); font-size: 12px;">UOS-ONB-2025-002</span></td>
+            <td>Mechanical Engineering</td>
+            <td>20 Aug 2025</td>
+            <td class="progress-cell">
+              <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+              <span class="progress-text">8/8</span>
+            </td>
+            <td><span class="badge badge-complete">Complete</span></td>
+            <td>Michael Chen</td>
+            <td class="action-buttons">
+              <button class="btn-small btn-view" onclick="viewDetails('002')">View</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Dr. Omar Al-Zahra</strong><br><span style="color: var(--muted); font-size: 12px;">UOS-ONB-2025-003</span></td>
+            <td>Medicine</td>
+            <td>1 Sep 2025</td>
+            <td class="progress-cell">
+              <div class="progress-bar"><div class="progress-fill" style="width: 25%"></div></div>
+              <span class="progress-text">2/8</span>
+            </td>
+            <td><span class="badge badge-pending">Pending</span></td>
+            <td>Not Assigned</td>
+            <td class="action-buttons">
+              <button class="btn-small btn-view" onclick="viewDetails('003')">View</button>
+              <button class="btn-small btn-assign" onclick="assignTask('003')">Assign</button>
+              <button class="btn-small btn-remind" onclick="sendReminder('003')">Remind</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Dr. Layla Mohammed</strong><br><span style="color: var(--muted); font-size: 12px;">UOS-ONB-2025-004</span></td>
+            <td>Mathematics</td>
+            <td>10 Aug 2025</td>
+            <td class="progress-cell">
+              <div class="progress-bar"><div class="progress-fill" style="width: 50%"></div></div>
+              <span class="progress-text">4/8</span>
+            </td>
+            <td><span class="badge badge-overdue">Overdue</span></td>
+            <td>Sarah Johnson</td>
+            <td class="action-buttons">
+              <button class="btn-small btn-view" onclick="viewDetails('004')">View</button>
+              <button class="btn-small btn-remind" onclick="sendReminder('004')">Remind</button>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Dr. Khalid Al-Rashid</strong><br><span style="color: var(--muted); font-size: 12px;">UOS-ONB-2025-005</span></td>
+            <td>Business Administration</td>
+            <td>25 Aug 2025</td>
+            <td class="progress-cell">
+              <div class="progress-bar"><div class="progress-fill" style="width: 75%"></div></div>
+              <span class="progress-text">6/8</span>
+            </td>
+            <td><span class="badge badge-in-progress">In Progress</span></td>
+            <td>Michael Chen</td>
+            <td class="action-buttons">
+              <button class="btn-small btn-view" onclick="viewDetails('005')">View</button>
+              <button class="btn-small btn-assign" onclick="assignTask('005')">Assign</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Task Assignment Modal -->
+    <div class="modal" id="assign-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Assign HR Task</h2>
+          <button class="close-btn" onclick="closeModal('assign-modal')">&times;</button>
+        </div>
+        <div>
+          <div class="assign-section">
+            <label>Select Task</label>
+            <select id="task-select">
+              <option value="initiate-visa">Initiate Visa Process</option>
+              <option value="arrange-housing">Arrange Housing</option>
+              <option value="send-welcome-email">Send Welcome Email</option>
+              <option value="schedule-orientation">Schedule Orientation</option>
+              <option value="process-documents">Process Documents</option>
+              <option value="setup-it-access">Setup IT Access</option>
+              <option value="coordinate-department">Coordinate with Department</option>
+            </select>
+          </div>
+          <div class="assign-section">
+            <label>Assign To</label>
+            <select id="assignee-select">
+              <option value="sarah">Sarah Johnson</option>
+              <option value="michael">Michael Chen</option>
+              <option value="emma">Emma Williams</option>
+              <option value="david">David Brown</option>
+            </select>
+          </div>
+          <div class="assign-section">
+            <label>Priority</label>
+            <select id="priority-select">
+              <option value="normal">Normal</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="assign-section">
+            <label>Notes (Optional)</label>
+            <textarea id="task-notes" style="width: 100%; min-height: 80px; padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: inherit; resize: vertical;"></textarea>
+          </div>
+          <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+            <button class="btn-secondary" onclick="closeModal('assign-modal')">Cancel</button>
+            <button class="btn-primary" onclick="confirmAssign()">Assign Task</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal" id="details-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Onboarding Details</h2>
+          <button class="close-btn" onclick="closeModal('details-modal')">&times;</button>
+        </div>
+        <div>
+          <h3 style="margin-bottom: 16px;">Pre-Joining Checklist</h3>
+          <div class="task-list">
+            <div class="task-item">
+              <div>
+                <div class="task-name">Attested Degree Certificates</div>
+                <div class="task-status">Completed on 5 Aug 2025</div>
+              </div>
+              <span class="badge badge-complete">Complete</span>
+            </div>
+            <div class="task-item">
+              <div>
+                <div class="task-name">Medical Check-up</div>
+                <div class="task-status">Completed on 7 Aug 2025</div>
+              </div>
+              <span class="badge badge-complete">Complete</span>
+            </div>
+            <div class="task-item">
+              <div>
+                <div class="task-name">Security Clearance</div>
+                <div class="task-status">Pending - Due 8 Aug 2025</div>
+              </div>
+              <span class="badge badge-pending">Pending</span>
+            </div>
+            <div class="task-item">
+              <div>
+                <div class="task-name">Good Conduct Certificate</div>
+                <div class="task-status">Completed on 6 Aug 2025</div>
+              </div>
+              <span class="badge badge-complete">Complete</span>
+            </div>
+            <div class="task-item">
+              <div>
+                <div class="task-name">Passport Copy</div>
+                <div class="task-status">Completed on 1 Aug 2025</div>
+              </div>
+              <span class="badge badge-complete">Complete</span>
+            </div>
+            <div class="task-item">
+              <div>
+                <div class="task-name">Visa Documents</div>
+                <div class="task-status">In Progress</div>
+              </div>
+              <span class="badge badge-in-progress">In Progress</span>
+            </div>
+            <div class="task-item">
+              <div>
+                <div class="task-name">Bank Account Details</div>
+                <div class="task-status">Completed on 9 Aug 2025</div>
+              </div>
+              <span class="badge badge-complete">Complete</span>
+            </div>
+            <div class="task-item">
+              <div>
+                <div class="task-name">Emergency Contact</div>
+                <div class="task-status">Completed on 9 Aug 2025</div>
+              </div>
+              <span class="badge badge-complete">Complete</span>
+            </div>
+          </div>
+
+          <h3 style="margin: 24px 0 16px 0;">HR Tasks</h3>
+          <div class="task-list">
+            <div class="task-item">
+              <div>
+                <div class="task-name">Initiate Visa Process</div>
+                <div class="task-status">Assigned to Sarah Johnson</div>
+              </div>
+              <span class="badge badge-in-progress">In Progress</span>
+            </div>
+            <div class="task-item">
+              <div>
+                <div class="task-name">Send Welcome Email</div>
+                <div class="task-status">Completed on 10 Aug 2025</div>
+              </div>
+              <span class="badge badge-complete">Complete</span>
+            </div>
+          </div>
+
+          <div style="margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 8px;">
+            <strong>Links to Resources:</strong>
+            <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+              <a href="#" style="color: var(--accent); text-decoration: none;">Faculty Handbook</a>
+              <a href="#" style="color: var(--accent); text-decoration: none;">UoS Code of Conduct</a>
+              <a href="#" style="color: var(--accent); text-decoration: none;">IT Policy</a>
+              <a href="#" style="color: var(--accent); text-decoration: none;">Housing Information</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function viewDetails(id) {
+      document.getElementById('details-modal').classList.add('active');
+    }
+
+    function assignTask(id) {
+      document.getElementById('assign-modal').classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function confirmAssign() {
+      const task = document.getElementById('task-select').value;
+      const assignee = document.getElementById('assignee-select').value;
+      alert(`Task "${task}" assigned to ${assignee}`);
+      closeModal('assign-modal');
+    }
+
+    function sendReminder(id) {
+      alert('Reminder email sent to new hire');
+    }
+
+    function exportData() {
+      alert('Exporting onboarding report...');
+    }
+
+    // Search and filter functionality
+    document.getElementById('search-input').addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase();
+      filterTable();
+    });
+
+    document.getElementById('status-filter').addEventListener('change', filterTable);
+    document.getElementById('department-filter').addEventListener('change', filterTable);
+
+    function filterTable() {
+      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+      const statusFilter = document.getElementById('status-filter').value;
+      const deptFilter = document.getElementById('department-filter').value;
+      const rows = document.querySelectorAll('#onboarding-table tr');
+
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const statusBadge = row.querySelector('.badge');
+        const status = statusBadge ? statusBadge.textContent.toLowerCase() : '';
+        const dept = row.cells[1] ? row.cells[1].textContent : '';
+
+        const matchesSearch = !searchQuery || text.includes(searchQuery);
+        const matchesStatus = statusFilter === 'all' ||
+          (statusFilter === 'complete' && status.includes('complete')) ||
+          (statusFilter === 'in-progress' && status.includes('progress')) ||
+          (statusFilter === 'pending' && status.includes('pending')) ||
+          (statusFilter === 'overdue' && status.includes('overdue'));
+        const matchesDept = deptFilter === 'all' || dept.includes(deptFilter);
+
+        row.style.display = matchesSearch && matchesStatus && matchesDept ? '' : 'none';
+      });
+    }
+
+    // Close modals on outside click
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.classList.remove('active');
+        }
+      });
+    });
+  </script>
+  
+  <!-- Authentication Check -->
+  <script src="auth_check.js"></script>
+</body>
+</html>
+
